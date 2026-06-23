@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:api": "tsx watch api/index.ts",
     "build": "vite build",
-    "build:api": "esbuild api/index.ts --bundle --format=esm --platform=node --outfile=dist-api/handler.mjs --external:@aws-sdk/*",
+    "build:api": "esbuild api/index.ts --bundle --format=esm --platform=node --outfile=dist-api/handler.mjs --external:@aws-sdk/* --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
     "preview": "vite preview"
   },
   "dependencies": {
