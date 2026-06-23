@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const router = new Hono()
 
-function getPeriskopeKey() { return process.env.getPeriskopeKey() ?? '' }
+function getPeriskopeKey() { return process.env.PERISKOPE_API_KEY ?? '' }
 function getPhones() { return [process.env.PERISKOPE_PHONE_1, process.env.PERISKOPE_PHONE_2].filter(Boolean) as string[] }
 function getAnthropic() { return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }) }
 
@@ -44,7 +44,7 @@ router.get('/api/periskope/chats', async (c) => {
   const userEmail = c.get('userEmail')
 
   if (!getPeriskopeKey()) {
-    return c.json({ error: 'getPeriskopeKey() not configured' }, 503)
+    return c.json({ error: 'PERISKOPE_API_KEY not configured' }, 503)
   }
 
   const filterMine = c.req.query('filter_mine') === 'true'
