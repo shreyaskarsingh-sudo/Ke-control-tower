@@ -4,17 +4,15 @@ import { differenceInDays } from 'date-fns'
 
 const router = new Hono()
 
-const BASE = process.env.JIRA_BASE_URL!
-const EMAIL = process.env.JIRA_EMAIL!
-const TOKEN = process.env.JIRA_API_TOKEN!
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
-
 function auth() {
-  return 'Basic ' + Buffer.from(`${EMAIL}:${TOKEN}`).toString('base64')
+  const email = process.env.JIRA_EMAIL!
+  const token = process.env.JIRA_API_TOKEN!
+  return 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64')
 }
 
 async function jiraFetch(path: string, init?: RequestInit) {
-  return fetch(`${BASE}${path}`, {
+  const base = process.env.JIRA_BASE_URL!
+  return fetch(`${base}${path}`, {
     ...init,
     headers: {
       Authorization: auth(),
@@ -169,7 +167,7 @@ router.get('/api/jira/issues', async (c) => {
         id: issue.key,
         source: 'jira',
         jiraKey: issue.key,
-        jiraUrl: `${BASE}/browse/${issue.key}`,
+        jiraUrl: `${process.env.JIRA_BASE_URL}/browse/${issue.key}`,
         subject: summary,
         merchantName: extractMerchant(summary, labels),
         description: description.slice(0, 3000),
@@ -295,7 +293,7 @@ Keep it under 3 sentences. Be polite and specific to the ticket context.
 Write ONLY the comment text, nothing else.`
 
   try {
-    const msg = await anthropic.messages.create({
+    const msg = await new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }).messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 200,
       messages: [{ role: 'user', content: prompt }],

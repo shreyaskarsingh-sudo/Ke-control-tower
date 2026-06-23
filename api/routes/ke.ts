@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { initMcpSession, callMcpTool, extractText } from '../../src/lib/ke-mcp'
 
 const router = new Hono()
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+function getAnthropic() { return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }) }
 
 // POST /api/ke/analyze
 router.post('/api/ke/analyze', async (c) => {
@@ -65,7 +65,7 @@ Give a structured, bullet-point summary with:
 
 Be direct and specific. Avoid generic statements.`
 
-    const aiResponse = await anthropic.messages.create({
+    const aiResponse = await getAnthropic().messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
       messages: [{ role: 'user', content: prompt }],

@@ -79,6 +79,13 @@ function buildSlackMessages(
     })
 }
 
+// GET /api/slack/status
+router.get('/api/slack/status', (c) => {
+  const email = c.get('userEmail')
+  const token = getToken(email, 'slack') ?? process.env.SLACK_TOKEN ?? null
+  return c.json({ connected: !!token })
+})
+
 // GET /api/slack/threads
 router.get('/api/slack/threads', async (c) => {
   const email = c.get('userEmail')

@@ -3,16 +3,16 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const router = new Hono()
 
-const PERISKOPE_API_KEY = process.env.PERISKOPE_API_KEY!
-const PHONES = [process.env.PERISKOPE_PHONE_1, process.env.PERISKOPE_PHONE_2].filter(Boolean) as string[]
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+function getPeriskopeKey() { return process.env.getPeriskopeKey() ?? '' }
+function getPhones() { return [process.env.PERISKOPE_PHONE_1, process.env.PERISKOPE_PHONE_2].filter(Boolean) as string[] }
+function getAnthropic() { return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }) }
 
 async function periRequest(path: string, phone: string, params: Record<string, string> = {}) {
   const url = new URL(`https://api.periskope.app/v1${path}`)
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
   const res = await fetch(url.toString(), {
     headers: {
-      'Authorization': `Bearer ${PERISKOPE_API_KEY}`,
+      'Authorization': `Bearer ${getPeriskopeKey()}`,
       'x-phone': phone,
       'Content-Type': 'application/json',
     },
@@ -43,8 +43,8 @@ function tsToMs(ts?: number | string): number {
 router.get('/api/periskope/chats', async (c) => {
   const userEmail = c.get('userEmail')
 
-  if (!PERISKOPE_API_KEY) {
-    return c.json({ error: 'PERISKOPE_API_KEY not configured' }, 503)
+  if (!getPeriskopeKey()) {
+    return c.json({ error: 'getPeriskopeKey() not configured' }, 503)
   }
 
   const filterMine = c.req.query('filter_mine') === 'true'
@@ -111,7 +111,7 @@ router.get('/api/periskope/chats/:id/messages', async (c) => {
       url.searchParams.set('sort_order', 'desc')
       const res = await fetch(url.toString(), {
         headers: {
-          'Authorization': `Bearer ${PERISKOPE_API_KEY}`,
+          'Authorization': `Bearer ${getPeriskopeKey()}`,
           'x-phone': phone,
         },
       })
@@ -167,7 +167,7 @@ router.post('/api/periskope/analyze', async (c) => {
         url.searchParams.set('limit', '100')
         url.searchParams.set('sort_order', 'desc')
         const res = await fetch(url.toString(), {
-          headers: { Authorization: `Bearer ${PERISKOPE_API_KEY}`, 'x-phone': phone },
+          headers: { Authorization: `Bearer ${getPeriskopeKey()}`, 'x-phone': phone },
         })
         if (!res.ok) continue
         const data = await res.json()
@@ -220,7 +220,7 @@ Overall sentiment: Positive / Neutral / Needs Attention — with a one-line reas
 Keep the analysis factual, brief, and actionable. Do not speculate beyond what the messages say.`
 
   try {
-    const response = await anthropic.messages.create({
+    const response = await getAnthropic().messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 600,
       messages: [{ role: 'user', content: prompt }],
@@ -288,7 +288,7 @@ router.post('/api/periskope/digest', async (c) => {
         url.searchParams.set('limit', '30')
         url.searchParams.set('sort_order', 'desc')
         const res = await fetch(url.toString(), {
-          headers: { 'Authorization': `Bearer ${PERISKOPE_API_KEY}`, 'x-phone': phone },
+          headers: { 'Authorization': `Bearer ${getPeriskopeKey()}`, 'x-phone': phone },
         })
         if (!res.ok) continue
         const data = await res.json()
@@ -363,7 +363,7 @@ Any patterns or things worth noting across these groups. 1-2 sentences max.
 Be specific, direct, and actionable. Skip anything already resolved.`
 
   try {
-    const response = await anthropic.messages.create({
+    const response = await getAnthropic().messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 700,
       messages: [{ role: 'user', content: prompt }],

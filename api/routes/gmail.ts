@@ -38,6 +38,14 @@ function extractText(payload: Record<string, unknown>): string {
   return ''
 }
 
+// GET /api/gmail/status
+router.get('/api/gmail/status', (c) => {
+  const email = c.get('userEmail')
+  const connected = hasToken(email, 'gmail') ||
+    !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+  return c.json({ connected })
+})
+
 // GET /api/gmail/threads
 router.get('/api/gmail/threads', async (c) => {
   const email = c.get('userEmail')

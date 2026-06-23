@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import Anthropic from '@anthropic-ai/sdk'
 
 const router = new Hono()
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+function getClient() { return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }) }
 
 // POST /api/ai/analyze
 router.post('/api/ai/analyze', async (c) => {
@@ -83,7 +83,7 @@ Rules:
 - Return ONLY valid JSON, no markdown`
 
   try {
-    const msg = await client.messages.create({
+    const msg = await getClient().messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }],
@@ -125,7 +125,7 @@ ${instruction ? `Additional instruction: ${instruction}` : ''}
 Write ONLY the reply message body. No subject line, no metadata. Start directly.`
 
   try {
-    const message = await client.messages.create({
+    const message = await getClient().messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 600,
       system: systemPrompt,
