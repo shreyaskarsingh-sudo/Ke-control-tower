@@ -7,6 +7,7 @@ import slackRoutes from './routes/slack'
 import gmailRoutes from './routes/gmail'
 import aiRoutes from './routes/ai'
 import keRoutes from './routes/ke'
+import authRoutes from './routes/auth'
 
 const app = new Hono()
 
@@ -23,6 +24,7 @@ app.get('/api/me', (c) => {
   return c.json({ email, name })
 })
 
+app.route('/', authRoutes)
 app.route('/', periskopeRoutes)
 app.route('/', jiraRoutes)
 app.route('/', slackRoutes)

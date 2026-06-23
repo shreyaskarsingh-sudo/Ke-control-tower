@@ -29,13 +29,12 @@ async function refreshAccessToken(email: string, token: GmailToken): Promise<Gma
     expiry_date: Date.now() + (data.expires_in ?? 3600) * 1000,
   };
 
-  saveToken(email, "gmail", JSON.stringify(refreshed));
+  await saveToken(email, "gmail", JSON.stringify(refreshed));
   return refreshed;
 }
 
-// Returns a valid access token, refreshing if needed
 export async function getGmailAccessToken(email: string): Promise<string> {
-  const raw = getToken(email, "gmail");
+  const raw = await getToken(email, "gmail");
   if (!raw) throw new Error("Gmail not connected");
 
   let token: GmailToken;
@@ -45,7 +44,6 @@ export async function getGmailAccessToken(email: string): Promise<string> {
     throw new Error("Gmail token corrupted");
   }
 
-  // Refresh if expired or expiring in next 2 minutes
   if (token.expiry_date < Date.now() + 120_000) {
     token = await refreshAccessToken(email, token);
   }
@@ -53,7 +51,6 @@ export async function getGmailAccessToken(email: string): Promise<string> {
   return token.access_token;
 }
 
-// Convenience: fetch Gmail API with auto-refresh
 export async function gmailFetch(email: string, path: string, options?: RequestInit): Promise<Response> {
   const accessToken = await getGmailAccessToken(email);
   return fetch(`https://gmail.googleapis.com/gmail/v1/users/me${path}`, {

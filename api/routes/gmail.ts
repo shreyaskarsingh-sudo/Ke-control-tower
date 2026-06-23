@@ -39,11 +39,10 @@ function extractText(payload: Record<string, unknown>): string {
 }
 
 // GET /api/gmail/status
-router.get('/api/gmail/status', (c) => {
+router.get('/api/gmail/status', async (c) => {
   const email = c.get('userEmail')
-  const connected = hasToken(email, 'gmail') ||
-    !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
-  return c.json({ connected })
+  const tokenExists = await hasToken(email, 'gmail')
+  return c.json({ connected: tokenExists })
 })
 
 // GET /api/gmail/threads

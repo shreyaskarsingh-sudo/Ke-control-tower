@@ -80,9 +80,9 @@ function buildSlackMessages(
 }
 
 // GET /api/slack/status
-router.get('/api/slack/status', (c) => {
+router.get('/api/slack/status', async (c) => {
   const email = c.get('userEmail')
-  const token = getToken(email, 'slack') ?? process.env.SLACK_TOKEN ?? null
+  const token = await getToken(email, 'slack') ?? process.env.SLACK_TOKEN ?? null
   return c.json({ connected: !!token })
 })
 
@@ -91,7 +91,7 @@ router.get('/api/slack/threads', async (c) => {
   const email = c.get('userEmail')
   if (!email) return c.json({ error: 'Unauthorized' }, 401)
 
-  const userToken = getToken(email, 'slack') ?? process.env.SLACK_TOKEN ?? null
+  const userToken = await getToken(email, 'slack') ?? process.env.SLACK_TOKEN ?? null
   if (!userToken) return c.json({ connected: false, threads: [] })
 
   try {
@@ -325,7 +325,7 @@ router.post('/api/slack/send', async (c) => {
   const email = c.get('userEmail')
   if (!email) return c.json({ error: 'Unauthorized' }, 401)
 
-  const userToken = getToken(email, 'slack') ?? process.env.SLACK_TOKEN ?? null
+  const userToken = await getToken(email, 'slack') ?? process.env.SLACK_TOKEN ?? null
   if (!userToken) return c.json({ error: 'Slack not connected' }, 400)
 
   const { channelId, message, threadTs } = await c.req.json()
@@ -348,7 +348,7 @@ router.get('/api/slack/dm-history', async (c) => {
   const channelId = c.req.query('channelId')
   if (!channelId) return c.json({ error: 'Missing channelId' }, 400)
 
-  const userToken = getToken(email, 'slack') ?? process.env.SLACK_TOKEN ?? null
+  const userToken = await getToken(email, 'slack') ?? process.env.SLACK_TOKEN ?? null
   if (!userToken) return c.json({ messages: [] })
 
   try {
