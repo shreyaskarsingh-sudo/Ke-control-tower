@@ -1,0 +1,74 @@
+"use client";
+
+interface GoKwikLogoProps {
+  size?: number;
+  showText?: boolean;
+  textColor?: string;
+  className?: string;
+}
+
+const LogoMark = ({ size, idSuffix = "" }: { size: number; idSuffix?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 34 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M26.5627 16.001L10.8771 31.3811C10.035 32.2067 8.67406 32.2067 7.83201 31.3811L1.13154 24.8111C0.289488 23.9855 0.289488 22.651 1.13154 21.8254L16.8171 6.44531L26.5627 16.001Z" fill={`url(#gk_p0${idSuffix})`}/>
+    <path d="M17.9307 13.8874L3.96513 27.5841L1.49121 25.1584L15.4568 11.4648L17.9307 13.8874Z" fill={`url(#gk_p1${idSuffix})`}/>
+    <path d="M14.2518 23.0365L1.13154 10.1718C0.289488 9.34612 0.289488 8.01164 1.13154 7.186L7.83201 0.619234C8.67406 -0.206411 10.035 -0.206411 10.8771 0.619234L23.9974 13.4839L14.2518 23.0365Z" fill={`url(#gk_p2${idSuffix})`}/>
+    <path d="M28.8016 22.335L19.5783 31.3787C18.7362 32.2044 17.3752 32.2044 16.5332 31.3787L9.83271 24.8088C8.99066 23.9831 8.99066 22.6486 9.83271 21.823L19.0561 12.7793L28.8016 22.335Z" fill={`url(#gk_p3${idSuffix})`}/>
+    <path d="M26.6319 13.8913L12.6663 27.5848L10.1924 25.1623L24.158 11.4688L26.6319 13.8913Z" fill={`url(#gk_p4${idSuffix})`}/>
+    <path d="M31.1616 11.9772L19.5949 0.635754C18.7463 -0.196293 17.369 -0.196293 16.5172 0.635754L9.84932 7.17372C9.00075 8.00576 9.00075 9.35624 9.84932 10.1915L20.4532 20.5889C23.2503 23.3314 23.2503 27.7797 20.4532 30.5222L25.5186 25.5555L31.1616 20.0224C33.4266 17.8015 33.4266 14.2013 31.1616 11.9772Z" fill={`url(#gk_p5${idSuffix})`}/>
+    <defs>
+      <linearGradient id={`gk_p0${idSuffix}`} x1="0.888745" y1="31.6209" x2="10.2875" y2="22.0354" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#EDDE5D"/><stop offset="1" stopColor="#F09819"/>
+      </linearGradient>
+      <linearGradient id={`gk_p1${idSuffix}`} x1="-1.55253" y1="30.5682" x2="6.0725" y2="22.7917" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#EDDE5D"/><stop offset="1" stopColor="#F09819"/>
+      </linearGradient>
+      <linearGradient id={`gk_p2${idSuffix}`} x1="-1.01768" y1="-1.48811" x2="20.1615" y2="20.1118" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#EDCE4D"/><stop offset="1" stopColor="#F09819"/>
+      </linearGradient>
+      <linearGradient id={`gk_p3${idSuffix}`} x1="37.6155" y1="4.13936" x2="14.3967" y2="27.8194" gradientUnits="userSpaceOnUse">
+        <stop offset="0.1617" stopColor="#000428"/><stop offset="1" stopColor="#004B8D"/>
+      </linearGradient>
+      <linearGradient id={`gk_p4${idSuffix}`} x1="24.3282" y1="13.7271" x2="11.4834" y2="26.827" gradientUnits="userSpaceOnUse">
+        <stop offset="0.1617" stopColor="#000428"/><stop offset="1" stopColor="#004B8D"/>
+      </linearGradient>
+      <linearGradient id={`gk_p5${idSuffix}`} x1="-24.0044" y1="-27.5918" x2="23.0869" y2="20.435" gradientUnits="userSpaceOnUse">
+        <stop offset="0.1617" stopColor="#000428"/><stop offset="1" stopColor="#004B8D"/>
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+export function GoKwikLogo({
+  size = 46,
+  showText = true,
+  textColor = "#001b44",
+  className = "",
+}: GoKwikLogoProps) {
+  return (
+    <div className={`flex items-center gap-2.5 ${className}`}>
+      <LogoMark size={size} idSuffix="_main" />
+      {showText && (
+        <span
+          style={{ color: textColor, fontFamily: "Manrope, sans-serif" }}
+          className="text-2xl font-extrabold tracking-tight"
+        >
+          GoKwik
+        </span>
+      )}
+    </div>
+  );
+}
+
+export function GoKwikLogoWhite({ size = 40 }: { size?: number }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <LogoMark size={size} idSuffix="_white" />
+      <span
+        style={{ fontFamily: "Manrope, sans-serif" }}
+        className="text-xl font-extrabold tracking-tight text-white"
+      >
+        GoKwik
+      </span>
+    </div>
+  );
+}

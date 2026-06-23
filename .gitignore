@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# env files — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# credentials — never commit
+users.json
+
+# build artifacts
+tsconfig.tsbuildinfo
+
+# logs
+logs/
+*.log
+
+# OS
+.DS_Store
+
+# PM2
+ecosystem.config.js.local
+.tokens.json

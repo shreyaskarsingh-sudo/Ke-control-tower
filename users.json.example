@@ -1,0 +1,35 @@
+{
+  "_comment": "Copy this file to users.json. Each key is a user ID (no spaces). Add one entry per CSM.",
+
+  "shrey": {
+    "display_name": "Shrey",
+    "JIRA_EMAIL": "shreyaskar.singh@gokwik.co",
+    "JIRA_TOKEN": "YOUR_JIRA_API_TOKEN_FOR_SHREY",
+    "GMAIL_CLIENT_ID": "YOUR_GCP_CLIENT_ID.apps.googleusercontent.com",
+    "GMAIL_CLIENT_SECRET": "YOUR_GCP_CLIENT_SECRET",
+    "GMAIL_REFRESH_TOKEN": "YOUR_GMAIL_REFRESH_TOKEN_FOR_SHREY",
+    "SLACK_TOKEN": "",
+    "slack_user_id": "U0XXXXXXXX",
+    "slack_dm_channels": {
+      "Mirza Taufiq": "D08M9G579TN",
+      "Shivendra Singh Bisht": "D09SRAMMWSU",
+      "Anoop K Mandhan": "D0ASR5RREF4"
+    }
+  },
+
+  "baisanabi": {
+    "display_name": "Baisanabi",
+    "JIRA_EMAIL": "baisanabi.tiwari@gokwik.co",
+    "JIRA_TOKEN": "YOUR_JIRA_API_TOKEN_FOR_BAISANABI",
+    "GMAIL_CLIENT_ID": "YOUR_GCP_CLIENT_ID.apps.googleusercontent.com",
+    "GMAIL_CLIENT_SECRET": "YOUR_GCP_CLIENT_SECRET",
+    "GMAIL_REFRESH_TOKEN": "YOUR_GMAIL_REFRESH_TOKEN_FOR_BAISANABI",
+    "SLACK_TOKEN": "",
+    "slack_user_id": "U0YYYYYYYY",
+    "slack_dm_channels": {
+      "Mirza Taufiq": "D08M9G579TN",
+      "Shivendra Singh Bisht": "D09SRAMMWSU",
+      "Anoop K Mandhan": "D0ASR5RREF4"
+    }
+  }
+}
