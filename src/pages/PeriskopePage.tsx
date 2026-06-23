@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api'
 import { useState, useEffect, useCallback, useRef } from "react";
 import { MessageCircle, Users, Bell, RefreshCw, Phone, X, ChevronDown, ChevronUp, Sparkles, AlertCircle, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -68,7 +69,7 @@ function AnalysisPanel({ chatId, chatName, onClose }: { chatId: string; chatName
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    fetch("/api/periskope/analyze", {
+    apiFetch("/api/periskope/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chatId, chatName }),
@@ -126,7 +127,7 @@ function KeAnalysisPanel({ chatName, onClose }: { chatName: string; onClose: () 
     setError(null);
     setAnalysis(null);
     try {
-      const res = await fetch("/api/ke/analyze", {
+      const res = await apiFetch("/api/ke/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ merchantId: merchantId.trim(), chatName }),
@@ -213,7 +214,7 @@ function ChatThread({ chatId }: { chatId: string }) {
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    fetch(`/api/periskope/chats/${encodeURIComponent(chatId)}/messages`)
+    apiFetch(`/api/periskope/chats/${encodeURIComponent(chatId)}/messages`)
       .then((r) => r.json())
       .then((d) => setMessages(d.messages || []))
       .catch(() => setMessages([]))
@@ -392,8 +393,8 @@ export default function PeriskopePage() {
     try {
       // Load all groups + my groups in parallel (my groups filter by session email server-side)
       const [allRes, myRes] = await Promise.all([
-        fetch("/api/periskope/chats"),
-        fetch("/api/periskope/chats?filter_mine=true"),
+        apiFetch("/api/periskope/chats"),
+        apiFetch("/api/periskope/chats?filter_mine=true"),
       ]);
       const [allData, myData] = await Promise.all([allRes.json(), myRes.json()]);
 
@@ -419,7 +420,7 @@ export default function PeriskopePage() {
     if (!phone) { setShowPhoneModal(true); return; }
     setMentionsLoading(true);
     try {
-      const res = await fetch(`/api/periskope/mentions?user_phone=${phone}`);
+      const res = await apiFetch(`/api/periskope/mentions?user_phone=${phone}`);
       const data = await res.json();
       setMentions(data.mentions || []);
     } finally {

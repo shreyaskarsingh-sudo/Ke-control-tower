@@ -56,8 +56,7 @@ export function Sidebar() {
     .slice(0, 2)
     .toUpperCase() ?? "CS";
 
-  async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+  function handleLogout() {
     navigate("/dashboard");
   }
 

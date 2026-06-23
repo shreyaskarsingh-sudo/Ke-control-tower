@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api'
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
@@ -58,8 +59,8 @@ function DashboardContent() {
   }, [toast]);
 
   useEffect(() => {
-    fetch("/api/slack/status").then((r) => r.json()).then((d) => setSlackConnected(d.connected)).catch(() => {});
-    fetch("/api/gmail/status").then((r) => r.json()).then((d) => setGmailConnected(d.connected)).catch(() => {});
+    apiFetch("/api/slack/status").then((r) => r.json()).then((d) => setSlackConnected(d.connected)).catch(() => {});
+    apiFetch("/api/gmail/status").then((r) => r.json()).then((d) => setGmailConnected(d.connected)).catch(() => {});
   }, []);
 
   async function fetchEscalations(currentView: View = view) {
@@ -131,10 +132,10 @@ function DashboardContent() {
     dismissItem(id, { source: esc?.source, subject: esc?.subject });
     if (selectedEscalation?.id === id) setSelectedEscalation(null);
     if (esc?.source === "gmail" && esc.threadId) {
-      fetch("/api/gmail/mark-read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ threadId: esc.threadId }) }).catch(() => {});
+      apiFetch("/api/gmail/mark-read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ threadId: esc.threadId }) }).catch(() => {});
     }
     if (esc?.source === "slack" && esc.channelId && esc.threadTs) {
-      fetch("/api/slack/mark-read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ channelId: esc.channelId, threadTs: esc.threadTs }) }).catch(() => {});
+      apiFetch("/api/slack/mark-read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ channelId: esc.channelId, threadTs: esc.threadTs }) }).catch(() => {});
     }
   }
 

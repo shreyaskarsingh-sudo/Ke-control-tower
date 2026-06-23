@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api'
 import { useState, useEffect } from "react";
 import { X, Send, Sparkles, Edit3, Mail, MessageSquare, Ticket, RotateCcw, ExternalLink, ChevronDown, ChevronUp, RefreshCw, CheckCheck } from "lucide-react";
 import type { Escalation, SlackMessage } from "@/types";
@@ -43,7 +44,7 @@ export function ReplyDrawer({ escalation, onClose, onDismiss }: ReplyDrawerProps
     if (escalation?.source === "gmail" && escalation.threadId) {
       setGmailMessages([]);
       setGmailLoading(true);
-      fetch(`/api/gmail/thread?threadId=${escalation.threadId}`)
+      apiFetch(`/api/gmail/thread?threadId=${escalation.threadId}`)
         .then((r) => r.json())
         .then((d) => {
           if (d.messages) {
@@ -58,7 +59,7 @@ export function ReplyDrawer({ escalation, onClose, onDismiss }: ReplyDrawerProps
     if (escalation?.source === "slack" && escalation.slackType === "dm" && escalation.channelId) {
       setDmMessages([]);
       setDmLoading(true);
-      fetch(`/api/slack/dm-history?channelId=${escalation.channelId}`)
+      apiFetch(`/api/slack/dm-history?channelId=${escalation.channelId}`)
         .then((r) => r.json())
         .then((d) => { if (d.messages) setDmMessages(d.messages); })
         .catch(() => {})
@@ -76,7 +77,7 @@ export function ReplyDrawer({ escalation, onClose, onDismiss }: ReplyDrawerProps
     if (!escalation || !escalation.jiraKey || !onDismiss) return;
     setClosingJira(true);
     try {
-      const res = await fetch("/api/jira/transition", {
+      const res = await apiFetch("/api/jira/transition", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jiraKey: escalation.jiraKey, assigneeEmail: escalation.assigneeEmail }),
@@ -101,7 +102,7 @@ export function ReplyDrawer({ escalation, onClose, onDismiss }: ReplyDrawerProps
   async function generateDraft() {
     setLoading(true);
     try {
-      const res = await fetch("/api/ai/draft", {
+      const res = await apiFetch("/api/ai/draft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

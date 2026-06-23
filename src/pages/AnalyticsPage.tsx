@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api'
 import { useState, useEffect, useMemo } from "react";
 import { Header } from "@/components/layout/Header";
 import { StatsBar } from "@/components/analytics/StatsBar";
@@ -42,9 +43,9 @@ export default function AnalyticsPage() {
     setLoading(true);
     try {
       const [slackRes, jiraRes, gmailRes] = await Promise.allSettled([
-        fetch("/api/slack/threads").then((r) => r.json()),
-        fetch("/api/jira/issues?view=my-queue").then((r) => r.json()),
-        fetch("/api/gmail/threads").then((r) => r.json()),
+        apiFetch("/api/slack/threads").then((r) => r.json()),
+        apiFetch("/api/jira/issues?view=my-queue").then((r) => r.json()),
+        apiFetch("/api/gmail/threads").then((r) => r.json()),
       ]);
       const all: Escalation[] = [];
       if (slackRes.status === "fulfilled" && slackRes.value.threads) all.push(...slackRes.value.threads);

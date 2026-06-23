@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { apiFetch } from '@/lib/api'
 
 interface User {
   email: string
@@ -11,7 +12,7 @@ export function useSession() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/me')
+    apiFetch('/api/me')
       .then((r) => r.json())
       .then((d) => {
         if (d.email) setUser({ email: d.email, name: d.name || d.email, picture: d.picture })

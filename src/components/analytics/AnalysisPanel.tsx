@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api'
 import { useState } from "react";
 import { Sparkles, AlertTriangle, AlertCircle, Info, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -86,14 +87,14 @@ export function AnalysisPanel() {
     try {
       // Fetch all sources in parallel
       const [slackRes, jiraRes] = await Promise.allSettled([
-        fetch("/api/slack/threads").then((r) => r.json()),
-        fetch("/api/jira/issues").then((r) => r.json()),
+        apiFetch("/api/slack/threads").then((r) => r.json()),
+        apiFetch("/api/jira/issues").then((r) => r.json()),
       ]);
 
       const slackThreads = slackRes.status === "fulfilled" ? slackRes.value.threads ?? [] : [];
       const jiraIssues = jiraRes.status === "fulfilled" ? jiraRes.value.issues ?? [] : [];
 
-      const res = await fetch("/api/ai/analyze", {
+      const res = await apiFetch("/api/ai/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slackThreads, jiraIssues, gmailThreads: [] }),

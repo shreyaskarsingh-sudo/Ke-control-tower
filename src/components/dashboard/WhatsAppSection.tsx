@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api'
 import { useState, useEffect, useRef } from "react";
 import { MessageCircle, Clock, Sparkles, RefreshCw, AlertCircle, ExternalLink, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -175,7 +176,7 @@ function DigestPanel({ onClose }: { onClose: () => void }) {
     if (ran.current) return;
     ran.current = true;
     const userPhone = localStorage.getItem("ke_user_phone") || "";
-    fetch("/api/periskope/digest", {
+    apiFetch("/api/periskope/digest", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_phone: userPhone }),
@@ -230,7 +231,7 @@ export function WhatsAppSection() {
 
   useEffect(() => {
     // Try assigned groups first; if none assigned, fall back to all groups
-    fetch("/api/periskope/chats?filter_mine=true")
+    apiFetch("/api/periskope/chats?filter_mine=true")
       .then((r) => r.json())
       .then((d) => {
         const mine: WaChat[] = d.chats || [];
@@ -240,7 +241,7 @@ export function WhatsAppSection() {
           setLoading(false);
         } else {
           setIsAssigned(false);
-          return fetch("/api/periskope/chats")
+          return apiFetch("/api/periskope/chats")
             .then((r) => r.json())
             .then((d2) => { setChats(d2.chats || []); setLoading(false); });
         }

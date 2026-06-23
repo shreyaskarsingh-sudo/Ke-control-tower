@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api'
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
@@ -99,14 +100,14 @@ function EscalationsContent() {
     dismissItem(id, { source: esc?.source, subject: esc?.subject });
     if (selectedEscalation?.id === id) setSelectedEscalation(null);
     if (esc?.source === "gmail" && esc.threadId) {
-      fetch("/api/gmail/mark-read", {
+      apiFetch("/api/gmail/mark-read", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ threadId: esc.threadId }),
       }).catch(() => {});
     }
     if (esc?.source === "slack" && esc.channelId && esc.threadTs) {
-      fetch("/api/slack/mark-read", {
+      apiFetch("/api/slack/mark-read", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ channelId: esc.channelId, threadTs: esc.threadTs }),
