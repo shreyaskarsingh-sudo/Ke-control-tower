@@ -1,5 +1,3 @@
-"use client";
-
 import { MessageSquare, Mail, CheckCircle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 

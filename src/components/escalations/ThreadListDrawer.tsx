@@ -1,5 +1,3 @@
-"use client";
-
 import { X, RotateCcw, Mail, MessageSquare, ExternalLink, Clock, ChevronRight, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Escalation } from "@/types";

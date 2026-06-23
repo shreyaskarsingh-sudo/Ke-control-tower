@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Sparkles, AlertTriangle, AlertCircle, Info, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";

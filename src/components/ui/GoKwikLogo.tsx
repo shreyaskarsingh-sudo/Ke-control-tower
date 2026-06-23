@@ -1,5 +1,3 @@
-"use client";
-
 interface GoKwikLogoProps {
   size?: number;
   showText?: boolean;

@@ -1,5 +1,3 @@
-"use client";
-
 import { TrendingUp, TrendingDown, Minus, AlertCircle } from "lucide-react";
 import type { MerchantStats } from "@/types";
 import { cn, healthScoreColor } from "@/lib/utils";

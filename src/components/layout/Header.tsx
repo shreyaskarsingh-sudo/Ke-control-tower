@@ -1,5 +1,3 @@
-"use client";
-
 import { Bell, Search, RefreshCw, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import type { Escalation } from "@/types";

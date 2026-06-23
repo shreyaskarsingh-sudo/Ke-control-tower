@@ -1,5 +1,3 @@
-"use client";
-
 import { Mail, MessageSquare, Ticket, Clock, ExternalLink, CheckCheck } from "lucide-react";
 import type { Escalation } from "@/types";
 import { cn, statusColor, statusLabel, priorityColor, timeAgo, hoursSince, agingColor, cleanSlackText } from "@/lib/utils";

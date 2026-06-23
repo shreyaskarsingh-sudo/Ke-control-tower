@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { X, Send, Sparkles, Edit3, Mail, MessageSquare, Ticket, RotateCcw, ExternalLink, ChevronDown, ChevronUp, RefreshCw, CheckCheck } from "lucide-react";
 import type { Escalation, SlackMessage } from "@/types";

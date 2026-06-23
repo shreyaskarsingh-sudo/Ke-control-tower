@@ -1,5 +1,3 @@
-"use client";
-
 import { Clock, CheckCircle, TrendingUp, Inbox, Info } from "lucide-react";
 import { useState } from "react";
 import type { DashboardStats } from "@/types";

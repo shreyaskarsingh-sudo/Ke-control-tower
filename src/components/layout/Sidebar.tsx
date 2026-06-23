@@ -1,8 +1,5 @@
-"use client";
-
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSession } from "@/hooks/useSession";
 import { GoKwikLogoWhite } from "@/components/ui/GoKwikLogo";
 import {
@@ -33,8 +30,8 @@ const sourceItems = [
 ];
 
 export function Sidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { user } = useSession();
   const [pendingCount, setPendingCount] = useState<number | null>(null);
 
@@ -60,11 +57,8 @@ export function Sidebar() {
     .toUpperCase() ?? "CS";
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.disableAutoSelect();
-    }
-    router.replace("/login");
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    navigate("/dashboard");
   }
 
   return (
@@ -85,7 +79,7 @@ export function Sidebar() {
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                to={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                   active ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -109,7 +103,7 @@ export function Sidebar() {
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                to={item.href}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/60 hover:bg-white/10 hover:text-white transition-all duration-150"
               >
                 <Icon size={16} strokeWidth={1.5} />
@@ -124,7 +118,6 @@ export function Sidebar() {
         <div className="mx-0 h-px bg-white opacity-10 mb-4" />
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
           {user?.picture ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={user.picture} alt={user.name} className="w-8 h-8 rounded-full shrink-0 object-cover" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold font-headline shrink-0">
