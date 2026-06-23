@@ -57,7 +57,10 @@ export function Sidebar() {
     .toUpperCase() ?? "CS";
 
   function handleLogout() {
-    navigate("/dashboard");
+    localStorage.clear()
+    sessionStorage.clear()
+    // Redirect to platform root — Lambda@Edge will re-authenticate on next app visit
+    window.location.href = '/'
   }
 
   return (
