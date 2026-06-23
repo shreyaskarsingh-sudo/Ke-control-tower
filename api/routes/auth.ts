@@ -7,10 +7,7 @@ function getAppUrl() {
   return (process.env.APP_URL ?? 'https://deployer.dev.gokwik.in').replace(/\/$/, '')
 }
 
-function apiBase() {
-  return `${getAppUrl()}/_api/app/ke-control-tower`
-}
-
+// Frontend base — Slack/Google redirect here (clean URL, no _api prefix)
 function frontendBase() {
   return `${getAppUrl()}/gokwik/ke-control-tower`
 }
@@ -24,6 +21,8 @@ router.get('/api/slack/connect', (c) => {
   const clientId = process.env.SLACK_CLIENT_ID
   if (!clientId) return c.json({ error: 'SLACK_CLIENT_ID not configured' }, 503)
 
+  const redirectUri = `${frontendBase()}/oauth/slack/callback`
+
   const params = new URLSearchParams({
     client_id: clientId,
     user_scope: [
@@ -36,22 +35,18 @@ router.get('/api/slack/connect', (c) => {
       'channels:history',
       'groups:history',
     ].join(','),
-    redirect_uri: `${apiBase()}/api/slack/callback`,
+    redirect_uri: redirectUri,
     state: email,
   })
 
   return Response.redirect(`https://slack.com/oauth/v2/authorize?${params.toString()}`)
 })
 
-router.get('/api/slack/callback', async (c) => {
-  const code = c.req.query('code')
-  const state = c.req.query('state')
-  const error = c.req.query('error')
-  const frontend = frontendBase()
+// Called by frontend OAuthCallbackPage after Slack redirects there
+router.post('/api/slack/oauth-complete', async (c) => {
+  const { code, state } = await c.req.json() as { code: string; state: string }
 
-  if (error || !code || !state) {
-    return Response.redirect(`${frontend}/dashboard?slack_error=true`)
-  }
+  if (!code || !state) return c.json({ success: false, error: 'Missing params' }, 400)
 
   const res = await fetch('https://slack.com/api/oauth.v2.access', {
     method: 'POST',
@@ -60,19 +55,19 @@ router.get('/api/slack/callback', async (c) => {
       client_id: process.env.SLACK_CLIENT_ID!,
       client_secret: process.env.SLACK_CLIENT_SECRET!,
       code,
-      redirect_uri: `${apiBase()}/api/slack/callback`,
+      redirect_uri: `${frontendBase()}/oauth/slack/callback`,
     }),
   })
 
   const data = await res.json() as Record<string, unknown>
 
   if (!data.ok || !(data.authed_user as Record<string, unknown>)?.access_token) {
-    console.error('[slack/callback] OAuth failed:', data.error)
-    return Response.redirect(`${frontend}/dashboard?slack_error=true`)
+    console.error('[slack/oauth-complete] failed:', data.error)
+    return c.json({ success: false, error: String(data.error) })
   }
 
   await saveToken(state, 'slack', (data.authed_user as Record<string, string>).access_token)
-  return Response.redirect(`${frontend}/dashboard?slack_connected=true`)
+  return c.json({ success: true })
 })
 
 // ─── Gmail OAuth ─────────────────────────────────────────────────────────────
@@ -85,9 +80,11 @@ router.get('/api/gmail/connect', (c) => {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET
   if (!clientId || !clientSecret) return c.json({ error: 'Google credentials not configured' }, 503)
 
+  const redirectUri = `${frontendBase()}/oauth/gmail/callback`
+
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: `${apiBase()}/api/gmail/callback`,
+    redirect_uri: redirectUri,
     response_type: 'code',
     scope: [
       'https://www.googleapis.com/auth/gmail.readonly',
@@ -104,15 +101,11 @@ router.get('/api/gmail/connect', (c) => {
   return Response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`)
 })
 
-router.get('/api/gmail/callback', async (c) => {
-  const code = c.req.query('code')
-  const state = c.req.query('state')
-  const error = c.req.query('error')
-  const frontend = frontendBase()
+// Called by frontend OAuthCallbackPage after Google redirects there
+router.post('/api/gmail/oauth-complete', async (c) => {
+  const { code, state } = await c.req.json() as { code: string; state: string }
 
-  if (error || !code || !state) {
-    return Response.redirect(`${frontend}/dashboard?gmail_error=true`)
-  }
+  if (!code || !state) return c.json({ success: false, error: 'Missing params' }, 400)
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
@@ -121,7 +114,7 @@ router.get('/api/gmail/callback', async (c) => {
       code,
       client_id: process.env.GOOGLE_CLIENT_ID!,
       client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      redirect_uri: `${apiBase()}/api/gmail/callback`,
+      redirect_uri: `${frontendBase()}/oauth/gmail/callback`,
       grant_type: 'authorization_code',
     }),
   })
@@ -129,8 +122,8 @@ router.get('/api/gmail/callback', async (c) => {
   const tokenData = await tokenRes.json() as Record<string, unknown>
 
   if (!tokenData.access_token) {
-    console.error('[gmail/callback] token exchange failed:', tokenData.error)
-    return Response.redirect(`${frontend}/dashboard?gmail_error=true`)
+    console.error('[gmail/oauth-complete] token exchange failed:', tokenData.error)
+    return c.json({ success: false, error: String(tokenData.error) })
   }
 
   const tokenObj = {
@@ -140,7 +133,7 @@ router.get('/api/gmail/callback', async (c) => {
   }
 
   await saveToken(state, 'gmail', JSON.stringify(tokenObj))
-  return Response.redirect(`${frontend}/dashboard?gmail_connected=true`)
+  return c.json({ success: true })
 })
 
 export default router

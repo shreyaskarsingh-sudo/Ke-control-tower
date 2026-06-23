@@ -4,6 +4,7 @@ import DashboardPage from '@/pages/DashboardPage'
 import EscalationsPage from '@/pages/EscalationsPage'
 import AnalyticsPage from '@/pages/AnalyticsPage'
 import PeriskopePage from '@/pages/PeriskopePage'
+import OAuthCallbackPage from '@/pages/OAuthCallbackPage'
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/escalations" element={<AppLayout><EscalationsPage /></AppLayout>} />
         <Route path="/analytics" element={<AppLayout><AnalyticsPage /></AppLayout>} />
         <Route path="/periskope" element={<AppLayout><PeriskopePage /></AppLayout>} />
+        <Route path="/oauth/:service/callback" element={<OAuthCallbackPage />} />
       </Routes>
     </BrowserRouter>
   )
