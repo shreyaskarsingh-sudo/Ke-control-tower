@@ -1,25 +1,31 @@
-import { useState, useEffect } from 'react'
-import { apiFetch } from '@/lib/api'
+"use client";
 
-interface User {
-  email: string
-  name: string
-  picture?: string
+import { useState, useEffect, useCallback } from "react";
+import type { SessionUser } from "@/lib/session";
+
+interface SessionState {
+  user: SessionUser | null;
+  status: "loading" | "authenticated" | "unauthenticated";
 }
 
-export function useSession() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+export function useSession(): SessionState {
+  const [state, setState] = useState<SessionState>({ user: null, status: "loading" });
 
-  useEffect(() => {
-    apiFetch('/api/me')
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.email) setUser({ email: d.email, name: d.name || d.email, picture: d.picture })
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+  const fetchSession = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const { user } = await res.json();
+        setState({ user, status: "authenticated" });
+      } else {
+        setState({ user: null, status: "unauthenticated" });
+      }
+    } catch {
+      setState({ user: null, status: "unauthenticated" });
+    }
+  }, []);
 
-  return { user, loading }
+  useEffect(() => { fetchSession(); }, [fetchSession]);
+
+  return state;
 }

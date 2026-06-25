@@ -1,6 +1,7 @@
+"use client";
+
 import { MessageSquare, Mail, CheckCircle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { apiUrl } from "@/lib/api";
 
 interface ConnectBannerProps {
   slackConnected: boolean;
@@ -16,7 +17,7 @@ export function ConnectBanner({ slackConnected, gmailConnected = false }: Connec
           {slackConnected ? <CheckCircle size={15} /> : <MessageSquare size={15} />}
           <span>{slackConnected ? "Slack connected" : "Connect Slack for DMs & mentions"}</span>
           {slackConnected && (
-            <a href={apiUrl("/api/slack/connect")} className="text-xs underline opacity-50 hover:opacity-100 transition-opacity ml-1">
+            <a href="/api/slack/connect" className="text-xs underline opacity-50 hover:opacity-100 transition-opacity ml-1">
               Reconnect
             </a>
           )}
@@ -26,7 +27,7 @@ export function ConnectBanner({ slackConnected, gmailConnected = false }: Connec
           {gmailConnected ? <CheckCircle size={15} /> : <Mail size={15} />}
           <span>{gmailConnected ? "Gmail connected" : "Connect Gmail for email threads"}</span>
           {gmailConnected && (
-            <a href={apiUrl("/api/gmail/connect")} className="text-xs underline opacity-50 hover:opacity-100 transition-opacity ml-1">
+            <a href="/api/gmail/connect" className="text-xs underline opacity-50 hover:opacity-100 transition-opacity ml-1">
               Reconnect
             </a>
           )}
@@ -35,7 +36,7 @@ export function ConnectBanner({ slackConnected, gmailConnected = false }: Connec
       <div className="flex items-center gap-2 shrink-0">
         {!slackConnected && (
           <a
-            href={apiUrl("/api/slack/connect")}
+            href="/api/slack/connect"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-colors"
           >
             <MessageSquare size={13} />
@@ -45,7 +46,7 @@ export function ConnectBanner({ slackConnected, gmailConnected = false }: Connec
         )}
         {!gmailConnected && (
           <a
-            href={apiUrl("/api/gmail/connect")}
+            href="/api/gmail/connect"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-outline-variant text-xs font-semibold text-on-surface-variant hover:bg-surface-container transition-colors"
           >
             <Mail size={13} />

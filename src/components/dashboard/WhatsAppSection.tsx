@@ -1,8 +1,9 @@
-import { apiFetch } from '@/lib/api'
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { MessageCircle, Clock, Sparkles, RefreshCw, AlertCircle, ExternalLink, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 interface WaChat {
   chat_id: string;
@@ -53,7 +54,7 @@ type DrawerMode = "pending" | "followup";
 function WaGroupRow({ chat }: { chat: WaChat }) {
   return (
     <Link
-      to="/periskope"
+      href="/periskope"
       className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-surface-container transition-colors border border-outline-variant/20 bg-surface-container-lowest group"
     >
       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-bold text-on-primary flex-shrink-0 font-headline">
@@ -123,7 +124,7 @@ function WaGroupDrawer({
           </div>
           <div className="flex items-center gap-2">
             <Link
-              to="/periskope"
+              href="/periskope"
               className="text-xs text-primary hover:underline font-label flex items-center gap-1"
               onClick={onClose}
             >
@@ -176,7 +177,7 @@ function DigestPanel({ onClose }: { onClose: () => void }) {
     if (ran.current) return;
     ran.current = true;
     const userPhone = localStorage.getItem("ke_user_phone") || "";
-    apiFetch("/api/periskope/digest", {
+    fetch("/api/periskope/digest", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_phone: userPhone }),
@@ -231,7 +232,7 @@ export function WhatsAppSection() {
 
   useEffect(() => {
     // Try assigned groups first; if none assigned, fall back to all groups
-    apiFetch("/api/periskope/chats?filter_mine=true")
+    fetch("/api/periskope/chats?filter_mine=true")
       .then((r) => r.json())
       .then((d) => {
         const mine: WaChat[] = d.chats || [];
@@ -241,7 +242,7 @@ export function WhatsAppSection() {
           setLoading(false);
         } else {
           setIsAssigned(false);
-          return apiFetch("/api/periskope/chats")
+          return fetch("/api/periskope/chats")
             .then((r) => r.json())
             .then((d2) => { setChats(d2.chats || []); setLoading(false); });
         }
@@ -279,7 +280,7 @@ export function WhatsAppSection() {
             <Sparkles size={12} />
             {showDigest ? "Hide AI digest" : "AI digest"}
           </button>
-          <Link to="/periskope" className="flex items-center gap-1 text-xs text-primary hover:underline font-label">
+          <Link href="/periskope" className="flex items-center gap-1 text-xs text-primary hover:underline font-label">
             View all <ExternalLink size={11} />
           </Link>
         </div>
