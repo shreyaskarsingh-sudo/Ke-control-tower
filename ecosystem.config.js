@@ -5,15 +5,17 @@
 
 module.exports = {
   apps: [{
-    name        : 'csm-control-tower',
-    script      : 'server.js',
+    name        : 'ke-control-tower',
+    script      : 'node_modules/.bin/next',
+    args        : 'start -p 3001',
+    exec_mode   : 'fork',
     instances   : 1,
     autorestart : true,
     watch       : false,
     max_memory_restart: '500M',
     env: {
       NODE_ENV  : 'production',
-      PORT      : 3000,
+      PORT      : 3001,
     },
     // Logs go to ~/.pm2/logs/
     error_file  : 'logs/error.log',

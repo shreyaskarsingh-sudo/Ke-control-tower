@@ -32,7 +32,11 @@ export async function POST(request: Request) {
   const token = await createSession(user);
 
   const response = NextResponse.json({ ok: true, user });
-  const isHttps = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://") ?? false;
+  // Check real protocol from proxy header; fall back to request URL.
+  // Never use NEXT_PUBLIC_APP_URL here — it may say https:// while nginx still
+  // proxies over HTTP, causing browsers to drop the Secure cookie silently.
+  const forwardedProto = (request as Request & { headers: Headers }).headers.get("x-forwarded-proto");
+  const isHttps = forwardedProto === "https" || request.url.startsWith("https://");
   response.cookies.set(COOKIE, token, {
     httpOnly: true,
     secure: isHttps,
