@@ -211,7 +211,7 @@ function ChatThread({ chatId }: { chatId: string }) {
   const [messages, setMessages] = useState<WaMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const startedRef = useRef(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -224,8 +224,8 @@ function ChatThread({ chatId }: { chatId: string }) {
   }, [chatId]);
 
   useEffect(() => {
-    if (!loading && messages.length) {
-      bottomRef.current?.scrollIntoView({ behavior: "instant" });
+    if (!loading && messages.length && containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [loading, messages]);
 
@@ -239,7 +239,7 @@ function ChatThread({ chatId }: { chatId: string }) {
   );
 
   return (
-    <div className="space-y-2 mt-3 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+    <div ref={containerRef} className="space-y-2 mt-3 max-h-64 overflow-y-auto custom-scrollbar pr-1">
       {messages.map((m, i) => {
         const senderLabel = m.fromMe ? "You (KwikEngage)" : (m.sender_name || "Member");
         return (
@@ -262,7 +262,6 @@ function ChatThread({ chatId }: { chatId: string }) {
           </div>
         );
       })}
-      <div ref={bottomRef} />
     </div>
   );
 }
