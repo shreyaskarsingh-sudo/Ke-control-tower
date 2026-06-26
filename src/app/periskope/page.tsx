@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { MessageCircle, Users, Bell, RefreshCw, Phone, X, ChevronDown, ChevronUp, Sparkles, AlertCircle, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -223,9 +223,13 @@ function ChatThread({ chatId }: { chatId: string }) {
       .finally(() => setLoading(false));
   }, [chatId]);
 
-  useLayoutEffect(() => {
-    if (!loading && containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+  useEffect(() => {
+    if (!loading && messages.length) {
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+      });
     }
   }, [loading, messages]);
 
