@@ -224,12 +224,9 @@ function ChatThread({ chatId }: { chatId: string }) {
   }, [chatId]);
 
   useEffect(() => {
-    if (!loading && messages.length) {
-      requestAnimationFrame(() => {
-        if (containerRef.current) {
-          containerRef.current.scrollTop = containerRef.current.scrollHeight;
-        }
-      });
+    if (!loading && messages.length && containerRef.current) {
+      const el = containerRef.current;
+      setTimeout(() => { el.scrollTop = el.scrollHeight; }, 0);
     }
   }, [loading, messages]);
 

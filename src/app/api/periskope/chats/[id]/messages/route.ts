@@ -63,7 +63,8 @@ export async function GET(
 
           return { ...raw, sender_name: displayName, fromMe };
         });
-      return NextResponse.json({ ...(data as object), messages: filtered, total_fetched: allMsgs.length });
+      // Reverse to oldest-first so the frontend can scroll to bottom = newest
+      return NextResponse.json({ ...(data as object), messages: filtered.slice().reverse(), total_fetched: allMsgs.length });
     } catch { /* try next phone */ }
   }
 
