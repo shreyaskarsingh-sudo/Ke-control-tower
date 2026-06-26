@@ -211,6 +211,7 @@ function ChatThread({ chatId }: { chatId: string }) {
   const [messages, setMessages] = useState<WaMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const startedRef = useRef(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -221,6 +222,12 @@ function ChatThread({ chatId }: { chatId: string }) {
       .catch(() => setMessages([]))
       .finally(() => setLoading(false));
   }, [chatId]);
+
+  useEffect(() => {
+    if (!loading && messages.length) {
+      bottomRef.current?.scrollIntoView({ behavior: "instant" });
+    }
+  }, [loading, messages]);
 
   if (loading) return (
     <div className="flex items-center justify-center gap-2 py-6 text-on-surface-variant text-xs">
@@ -233,7 +240,7 @@ function ChatThread({ chatId }: { chatId: string }) {
 
   return (
     <div className="space-y-2 mt-3 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-      {messages.slice().reverse().map((m, i) => {
+      {messages.map((m, i) => {
         const senderLabel = m.fromMe ? "You (KwikEngage)" : (m.sender_name || "Member");
         return (
           <div key={i} className={cn("flex", m.fromMe ? "justify-end" : "justify-start")}>
@@ -255,6 +262,7 @@ function ChatThread({ chatId }: { chatId: string }) {
           </div>
         );
       })}
+      <div ref={bottomRef} />
     </div>
   );
 }
