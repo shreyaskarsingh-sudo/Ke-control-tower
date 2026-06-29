@@ -38,20 +38,26 @@ function write(data: Record<string, string>) {
   fs.writeFileSync(TOKENS_FILE, JSON.stringify(data, null, 2));
 }
 
-export function saveToken(email: string, service: "slack" | "gmail", token: string) {
+export function saveToken(email: string, service: "slack" | "gmail" | "jira", token: string) {
   const store = read();
   store[`${service}:${email}`] = encrypt(token);
   write(store);
 }
 
-export function getToken(email: string, service: "slack" | "gmail"): string | null {
+export function getToken(email: string, service: "slack" | "gmail" | "jira"): string | null {
   const store = read();
   const enc = store[`${service}:${email}`];
   if (!enc) return null;
   try { return decrypt(enc); } catch { return null; }
 }
 
-export function hasToken(email: string, service: "slack" | "gmail"): boolean {
+export function hasToken(email: string, service: "slack" | "gmail" | "jira"): boolean {
   const store = read();
   return !!store[`${service}:${email}`];
+}
+
+export function removeToken(email: string, service: "slack" | "gmail" | "jira") {
+  const store = read();
+  delete store[`${service}:${email}`];
+  write(store);
 }

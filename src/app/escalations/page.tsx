@@ -36,16 +36,55 @@ function EscalationsContent() {
   const [total, setTotal] = useState(0);
   const [sortField, setSortField] = useState<SortField>("priority");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [gmailInboxItems, setGmailInboxItems] = useState<Escalation[]>([]);
+  const [gmailPageTokens, setGmailPageTokens] = useState<string[]>([""]); // index = page-1, value = token to fetch that page
+  const [gmailCurrentPage, setGmailCurrentPage] = useState(1);
+  const [gmailLoading, setGmailLoading] = useState(false);
+  const [gmailNextToken, setGmailNextToken] = useState<string>("");
+
+  async function fetchGmailInbox(page: number, token: string) {
+    setGmailLoading(true);
+    try {
+      const qs = new URLSearchParams({ inbox: "true", ...(token ? { pageToken: token } : {}) });
+      const res = await fetch(`/api/gmail/threads?${qs}`);
+      const data = await res.json();
+      setGmailInboxItems(data.threads || []);
+      const next = data.nextPageToken ?? "";
+      setGmailNextToken(next);
+      // Store this page's token so we can go back
+      setGmailPageTokens((prev) => {
+        const updated = [...prev];
+        updated[page - 1] = token;
+        if (next && !updated[page]) updated[page] = next;
+        return updated;
+      });
+    } finally {
+      setGmailLoading(false);
+    }
+  }
 
   // Sync activeSource when URL param changes (e.g. sidebar source links — fix 5.1)
   useEffect(() => {
-    if (sourceParam) setActiveSource(sourceParam);
+    if (sourceParam) {
+      setActiveSource(sourceParam);
+      if (sourceParam === "gmail") {
+        setGmailCurrentPage(1);
+        setGmailPageTokens([""]);
+        fetchGmailInbox(1, "");
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceParam]);
 
   // Reset status filter when switching source to avoid empty-state surprise (fix 2.1)
   function handleSourceChange(src: EscalationSource | "all") {
     setActiveSource(src);
     setStatusFilter("all");
+    if (src === "gmail") {
+      setGmailCurrentPage(1);
+      setGmailPageTokens([""]);
+      fetchGmailInbox(1, "");
+    }
   }
 
   async function fetchAll(currentView: View = view) {
@@ -294,7 +333,60 @@ function EscalationsContent() {
 
           {/* Escalation list */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {loading ? (
+            {activeSource === "gmail" ? (
+              // Gmail inbox: paginated all-inbox view
+              <>
+                {gmailLoading ? (
+                  <div className="flex flex-col items-center justify-center h-40 text-on-surface-variant">
+                    <RefreshCw size={20} className="animate-spin mb-2 text-primary" />
+                    <p className="text-sm">Loading inbox…</p>
+                  </div>
+                ) : gmailInboxItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-40 text-on-surface-variant">
+                    <p className="text-sm">No emails found</p>
+                  </div>
+                ) : (
+                  gmailInboxItems.map((e) => (
+                    <EscalationCard
+                      key={e.id}
+                      escalation={e}
+                      onClick={setSelectedEscalation}
+                      onDismiss={dismissedIds.has(e.id) ? undefined : handleDismiss}
+                      selected={selectedEscalation?.id === e.id}
+                    />
+                  ))
+                )}
+                {/* Pagination */}
+                {!gmailLoading && (gmailCurrentPage > 1 || gmailNextToken) && (
+                  <div className="flex items-center justify-center gap-3 py-4 border-t border-outline-variant/20">
+                    <button
+                      onClick={() => {
+                        const prevPage = gmailCurrentPage - 1;
+                        setGmailCurrentPage(prevPage);
+                        fetchGmailInbox(prevPage, gmailPageTokens[prevPage - 1] ?? "");
+                      }}
+                      disabled={gmailCurrentPage <= 1}
+                      className="px-3 py-1.5 text-xs rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 transition-colors"
+                    >
+                      ← Previous
+                    </button>
+                    <span className="text-xs text-on-surface-variant font-label">Page {gmailCurrentPage}</span>
+                    <button
+                      onClick={() => {
+                        if (!gmailNextToken || gmailCurrentPage >= 4) return;
+                        const nextPage = gmailCurrentPage + 1;
+                        setGmailCurrentPage(nextPage);
+                        fetchGmailInbox(nextPage, gmailNextToken);
+                      }}
+                      disabled={!gmailNextToken || gmailCurrentPage >= 4}
+                      className="px-3 py-1.5 text-xs rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 transition-colors"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : loading ? (
               <div className="flex flex-col items-center justify-center h-40 text-on-surface-variant">
                 <RefreshCw size={20} className="animate-spin mb-2 text-primary" />
                 <p className="text-sm">Loading your queries...</p>

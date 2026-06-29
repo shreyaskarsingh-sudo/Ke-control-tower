@@ -1,14 +1,25 @@
-import { Bell, Search, RefreshCw, X } from "lucide-react";
+"use client";
+
+import { Bell, Search, RefreshCw, X, MessageCircle } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import type { Escalation } from "@/types";
 import { Mail, MessageSquare, Ticket } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const SOURCE_ICON: Record<string, React.ElementType> = {
   gmail: Mail,
   slack: MessageSquare,
   jira: Ticket,
+  whatsapp: MessageCircle,
 };
+
+interface WaChat {
+  chat_id: string;
+  chat_name: string;
+  status: string;
+  latest_message?: { body?: string; timestamp?: number | string };
+}
 
 interface HeaderProps {
   title: string;
@@ -16,15 +27,17 @@ interface HeaderProps {
   onRefresh?: () => void;
   searchData?: Escalation[];
   onSelectResult?: (e: Escalation) => void;
+  whatsappChats?: WaChat[];
 }
 
-export function Header({ title, subtitle, onRefresh, searchData = [], onSelectResult }: HeaderProps) {
+export function Header({ title, subtitle, onRefresh, searchData = [], onSelectResult, whatsappChats = [] }: HeaderProps) {
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
-  const results = query.trim().length >= 2
+  const escalationResults = query.trim().length >= 2
     ? searchData
         .filter((e) => {
           const q = query.toLowerCase();
@@ -34,8 +47,16 @@ export function Header({ title, subtitle, onRefresh, searchData = [], onSelectRe
             e.merchantName.toLowerCase().includes(q)
           );
         })
-        .slice(0, 8)
+        .slice(0, 6)
     : [];
+
+  const waResults = query.trim().length >= 2
+    ? whatsappChats
+        .filter((c) => c.chat_name?.toLowerCase().includes(query.toLowerCase()))
+        .slice(0, 3)
+    : [];
+
+  const hasResults = escalationResults.length > 0 || waResults.length > 0;
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -61,13 +82,13 @@ export function Header({ title, subtitle, onRefresh, searchData = [], onSelectRe
         <div ref={wrapperRef} className="relative">
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container transition-all duration-200 ${
-              searching ? "w-72" : "w-44"
+              searching ? "w-80" : "w-52"
             }`}
           >
             <Search size={15} className="text-on-surface-variant shrink-0" />
             <input
               type="text"
-              placeholder="Search across Email, Slack, Jira..."
+              placeholder="Search Slack, Jira, Email, WhatsApp..."
               value={query}
               onChange={(e) => { setQuery(e.target.value); setShowResults(true); }}
               onFocus={() => { setSearching(true); setShowResults(true); }}
@@ -81,32 +102,49 @@ export function Header({ title, subtitle, onRefresh, searchData = [], onSelectRe
             )}
           </div>
 
-          {/* Search results dropdown */}
           {showResults && query.trim().length >= 2 && (
-            <div className="absolute top-full right-0 mt-1 w-[420px] bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant/20 z-50 overflow-hidden max-h-80 overflow-y-auto">
-              {results.length === 0 ? (
+            <div className="absolute top-full right-0 mt-1 w-[440px] bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant/20 z-50 overflow-hidden max-h-80 overflow-y-auto">
+              {!hasResults ? (
                 <div className="px-4 py-3 text-sm text-on-surface-variant text-center">No results for &quot;{query}&quot;</div>
               ) : (
-                results.map((e) => {
-                  const Icon = SOURCE_ICON[e.source] ?? Mail;
-                  return (
+                <>
+                  {escalationResults.map((e) => {
+                    const Icon = SOURCE_ICON[e.source] ?? Mail;
+                    return (
+                      <button
+                        key={e.id}
+                        onMouseDown={() => { onSelectResult?.(e); setShowResults(false); setQuery(""); }}
+                        className="w-full flex items-start gap-3 px-4 py-3 hover:bg-surface-container text-left border-b border-outline-variant/10 last:border-0 transition-colors"
+                      >
+                        <Icon size={14} className="text-on-surface-variant mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-on-surface truncate">{e.subject}</p>
+                          <p className="text-xs text-on-surface-variant truncate mt-0.5">{e.snippet}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-xs capitalize text-on-surface-variant bg-surface-container rounded px-1.5 py-0.5">{e.source}</span>
+                          <p className="text-xs text-on-surface-variant mt-1">{timeAgo(e.lastMessageAt)}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                  {waResults.map((c) => (
                     <button
-                      key={e.id}
-                      onMouseDown={() => { onSelectResult?.(e); setShowResults(false); setQuery(""); }}
+                      key={c.chat_id}
+                      onMouseDown={() => { router.push("/periskope"); setShowResults(false); setQuery(""); }}
                       className="w-full flex items-start gap-3 px-4 py-3 hover:bg-surface-container text-left border-b border-outline-variant/10 last:border-0 transition-colors"
                     >
-                      <Icon size={14} className="text-on-surface-variant mt-0.5 shrink-0" />
+                      <MessageCircle size={14} className="text-on-surface-variant mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-on-surface truncate">{e.subject}</p>
-                        <p className="text-xs text-on-surface-variant truncate mt-0.5">{e.snippet}</p>
+                        <p className="text-sm font-medium text-on-surface truncate">{c.chat_name}</p>
+                        <p className="text-xs text-on-surface-variant truncate mt-0.5">{c.latest_message?.body?.slice(0, 80) ?? "No messages"}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-xs capitalize text-on-surface-variant bg-surface-container rounded px-1.5 py-0.5">{e.source}</span>
-                        <p className="text-xs text-on-surface-variant mt-1">{timeAgo(e.lastMessageAt)}</p>
+                        <span className="text-xs text-on-surface-variant bg-surface-container rounded px-1.5 py-0.5">WhatsApp</span>
                       </div>
                     </button>
-                  );
-                })
+                  ))}
+                </>
               )}
             </div>
           )}

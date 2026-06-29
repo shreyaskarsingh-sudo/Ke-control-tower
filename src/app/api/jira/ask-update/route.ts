@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import Anthropic from "@anthropic-ai/sdk";
+import { getToken } from "@/lib/token-store";
 
 const BASE = process.env.JIRA_BASE_URL;
-const EMAIL = process.env.JIRA_EMAIL;
-const TOKEN = process.env.JIRA_API_TOKEN;
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-function auth() {
-  return "Basic " + Buffer.from(`${EMAIL}:${TOKEN}`).toString("base64");
-}
 
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const userToken = getToken(session.email, "jira");
+  if (!userToken) {
+    return NextResponse.json(
+      { error: "jira_not_connected", message: "Connect your personal Jira account from the dashboard to post comments." },
+      { status: 403 }
+    );
+  }
+  const authHeader = "Basic " + Buffer.from(`${session.email}:${userToken}`).toString("base64");
 
   const { jiraKey, summary, daysSinceUpdate, daysOpen, lastComment } = await request.json();
 
@@ -42,7 +46,7 @@ Write ONLY the comment text, nothing else.`;
     const res = await fetch(`${BASE}/rest/api/3/issue/${jiraKey}/comment`, {
       method: "POST",
       headers: {
-        Authorization: auth(),
+        Authorization: authHeader,
         "Content-Type": "application/json",
         Accept: "application/json",
       },

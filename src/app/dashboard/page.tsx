@@ -39,6 +39,8 @@ function DashboardContent() {
   const [view, setView] = useState<View>("my-queue");
   const [slackConnected, setSlackConnected] = useState(false);
   const [gmailConnected, setGmailConnected] = useState(false);
+  const [jiraConnected, setJiraConnected] = useState(false);
+  const [whatsappChats, setWhatsappChats] = useState<Array<{chat_id: string; chat_name: string; status: string; latest_message?: {body?: string; timestamp?: number | string}}>>([]);
   const [escalations, setEscalations] = useState<Escalation[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -62,6 +64,8 @@ function DashboardContent() {
   useEffect(() => {
     fetch("/api/slack/status").then((r) => r.json()).then((d) => setSlackConnected(d.connected)).catch(() => {});
     fetch("/api/gmail/status").then((r) => r.json()).then((d) => setGmailConnected(d.connected)).catch(() => {});
+    fetch("/api/jira/connect").then((r) => r.json()).then((d) => setJiraConnected(d.connected)).catch(() => {});
+    fetch("/api/periskope/chats").then((r) => r.json()).then((d) => setWhatsappChats(d.chats || [])).catch(() => {});
   }, []);
 
   async function fetchEscalations(currentView: View = view) {
@@ -252,6 +256,7 @@ function DashboardContent() {
         onRefresh={() => fetchEscalations(view)}
         searchData={escalations}
         onSelectResult={setSelectedEscalation}
+        whatsappChats={whatsappChats}
       />
 
       {toast && (
@@ -277,7 +282,7 @@ function DashboardContent() {
           ) : (
             <>
               <StatsBar stats={realStats} onCardClick={handleStatClick} />
-              <ConnectBanner slackConnected={slackConnected} gmailConnected={gmailConnected} />
+              <ConnectBanner slackConnected={slackConnected} gmailConnected={gmailConnected} jiraConnected={jiraConnected} onJiraConnected={() => fetchEscalations(view)} />
               <AnalysisPanel />
 
               {/* Email Headline Cards — Section 1.2 */}

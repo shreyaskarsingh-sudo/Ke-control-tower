@@ -1,25 +1,20 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { differenceInDays } from "date-fns";
+import { getToken } from "@/lib/token-store";
 
 const BASE = process.env.JIRA_BASE_URL;
-const EMAIL = process.env.JIRA_EMAIL;
-const TOKEN = process.env.JIRA_API_TOKEN;
 
-function auth() {
-  return "Basic " + Buffer.from(`${EMAIL}:${TOKEN}`).toString("base64");
-}
-
-async function jiraFetch(path: string) {
+async function jiraFetch(path: string, auth: string) {
   const res = await fetch(`${BASE}/rest/api/3${path}`, {
-    headers: { Authorization: auth(), Accept: "application/json" },
+    headers: { Authorization: auth, Accept: "application/json" },
   });
   if (!res.ok) throw new Error(`Jira ${res.status}: ${path}`);
   return res.json();
 }
 
 // Fetch ALL pages using cursor-based pagination (/search/jql returns nextPageToken)
-async function jiraFetchAll(jql: string, fields: string): Promise<Record<string, unknown>[]> {
+async function jiraFetchAll(jql: string, fields: string, auth: string): Promise<Record<string, unknown>[]> {
   const all: Record<string, unknown>[] = [];
   let nextPageToken = "";
   let isLast = false;
@@ -27,7 +22,7 @@ async function jiraFetchAll(jql: string, fields: string): Promise<Record<string,
   do {
     const tokenParam = nextPageToken ? `&nextPageToken=${encodeURIComponent(nextPageToken)}` : "";
     const path = `/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=${fields}${tokenParam}`;
-    const data = await jiraFetch(path);
+    const data = await jiraFetch(path, auth);
     all.push(...((data.issues ?? []) as Record<string, unknown>[]));
     isLast = data.isLast ?? true;
     nextPageToken = (data.nextPageToken as string) ?? "";
@@ -108,6 +103,15 @@ export async function GET(request: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const userToken = getToken(session.email, "jira");
+  if (!userToken) {
+    return NextResponse.json(
+      { issues: [], total: 0, error: "jira_not_connected", message: "Connect your personal Jira account from the dashboard to see Jira tickets." },
+      { status: 200 }
+    );
+  }
+  const auth = "Basic " + Buffer.from(`${session.email}:${userToken}`).toString("base64");
+
   const { searchParams } = new URL(request.url);
   const view = searchParams.get("view") ?? "my-queue";
   const email = session.email;
@@ -121,7 +125,7 @@ export async function GET(request: Request) {
       : `(assignee = "${email}" OR reporter = "${email}") AND statusCategory != Done ORDER BY updated ASC`;
 
   try {
-    const rawIssues = await jiraFetchAll(jql, FIELDS);
+    const rawIssues = await jiraFetchAll(jql, FIELDS, auth);
 
     type RawIssue = { key: string; fields: Record<string, unknown> };
     const issues = (rawIssues as RawIssue[]).map((issue) => {
