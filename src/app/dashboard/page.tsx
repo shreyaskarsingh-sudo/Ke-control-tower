@@ -125,6 +125,16 @@ function DashboardContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-open escalation from deep link (?openId=...)
+  const openIdParam = searchParams.get("openId");
+  useEffect(() => {
+    if (openIdParam && escalations.length > 0 && !selectedEscalation) {
+      const found = escalations.find((e) => e.id === openIdParam);
+      if (found) setSelectedEscalation(found);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [escalations, openIdParam]);
+
   // Keep sidebar badge in sync
   useEffect(() => {
     const count = escalations.filter((e) => !dismissedIds.has(e.id)).length;
@@ -283,7 +293,7 @@ function DashboardContent() {
             <>
               <StatsBar stats={realStats} onCardClick={handleStatClick} />
               <ConnectBanner slackConnected={slackConnected} gmailConnected={gmailConnected} jiraConnected={jiraConnected} onJiraConnected={() => fetchEscalations(view)} />
-              <AnalysisPanel />
+              <AnalysisPanel escalations={escalations} whatsappChats={whatsappChats} onSelectEscalation={setSelectedEscalation} />
 
               {/* Email Headline Cards — Section 1.2 */}
               <div>

@@ -19,16 +19,18 @@ async function periRequest(path: string, phone: string, params: Record<string, s
 }
 
 function getChatStatus(chat: Record<string, unknown>): string {
-  // Respect Periskope's own conversation status — a manually closed chat stays closed
+  // Manually closed/resolved chats always stay closed
   const periStatus = (chat.conversation_status ?? chat.status) as string | undefined;
   if (periStatus === "closed" || periStatus === "resolved") return "closed";
 
   const msg = chat.latest_message as Record<string, unknown> | null;
   if (!msg) return "empty";
-  const msgUnread = (chat.message_unread_count as number) || 0;
+
+  // If the last message was sent by KE (our phone), we've responded
   if (msg.from_me || msg.fromMe) return "responded";
-  if (msgUnread > 0) return "pending";
-  return "closed";
+
+  // Last message is from customer/merchant — reply is awaited from KE
+  return "pending";
 }
 
 export async function GET(request: Request) {

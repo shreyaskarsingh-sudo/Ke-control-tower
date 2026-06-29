@@ -113,7 +113,15 @@ export function Header({ title, subtitle, onRefresh, searchData = [], onSelectRe
                     return (
                       <button
                         key={e.id}
-                        onMouseDown={() => { onSelectResult?.(e); setShowResults(false); setQuery(""); }}
+                        onMouseDown={() => {
+                          setShowResults(false);
+                          setQuery("");
+                          if (onSelectResult) {
+                            onSelectResult(e);
+                          } else {
+                            router.push(`/dashboard?openId=${encodeURIComponent(e.id)}`);
+                          }
+                        }}
                         className="w-full flex items-start gap-3 px-4 py-3 hover:bg-surface-container text-left border-b border-outline-variant/10 last:border-0 transition-colors"
                       >
                         <Icon size={14} className="text-on-surface-variant mt-0.5 shrink-0" />
@@ -131,7 +139,7 @@ export function Header({ title, subtitle, onRefresh, searchData = [], onSelectRe
                   {waResults.map((c) => (
                     <button
                       key={c.chat_id}
-                      onMouseDown={() => { router.push("/periskope"); setShowResults(false); setQuery(""); }}
+                      onMouseDown={() => { router.push(`/periskope?chat=${encodeURIComponent(c.chat_id)}`); setShowResults(false); setQuery(""); }}
                       className="w-full flex items-start gap-3 px-4 py-3 hover:bg-surface-container text-left border-b border-outline-variant/10 last:border-0 transition-colors"
                     >
                       <MessageCircle size={14} className="text-on-surface-variant mt-0.5 shrink-0" />

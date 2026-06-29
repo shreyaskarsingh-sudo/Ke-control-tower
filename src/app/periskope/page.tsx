@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { MessageCircle, Users, Bell, RefreshCw, Phone, X, ChevronDown, ChevronUp, Sparkles, AlertCircle, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -272,15 +273,22 @@ function getInitials(name: string): string {
   return words.slice(0, 2).map((w) => w[0] ?? "").join("").toUpperCase() || "GR";
 }
 
-function ChatCard({ chat }: { chat: WaChat }) {
-  const [expanded, setExpanded] = useState(false);
+function ChatCard({ chat, defaultExpanded = false }: { chat: WaChat; defaultExpanded?: boolean }) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showKeAnalysis, setShowKeAnalysis] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const initials = getInitials(chat.chat_name);
   const preview = chat.latest_message?.body?.substring(0, 90) ?? "No messages";
 
+  useEffect(() => {
+    if (defaultExpanded && cardRef.current) {
+      setTimeout(() => cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+    }
+  }, [defaultExpanded]);
+
   return (
-    <div className={cn(
+    <div ref={cardRef} className={cn(
       "bg-surface-container-lowest rounded-xl shadow-card overflow-hidden transition-shadow hover:shadow-md",
       chat.status === "pending" && "border border-amber-200",
       chat.user_mentioned && "border border-violet-200",
@@ -378,7 +386,9 @@ function ChatCard({ chat }: { chat: WaChat }) {
   );
 }
 
-export default function PeriskopePage() {
+function PeriskopeContent() {
+  const searchParams = useSearchParams();
+  const expandChatId = searchParams.get("chat") ?? "";
   const [tab, setTab] = useState<"all" | "mine" | "mentions">("all");
   const [allChats, setAllChats] = useState<WaChat[]>([]);
   const [myChats, setMyChats] = useState<WaChat[]>([]);
@@ -575,7 +585,7 @@ export default function PeriskopePage() {
           </div>
         ) : (
           <div className="space-y-2">
-            {filtered.map((chat) => <ChatCard key={chat.chat_id} chat={chat} />)}
+            {filtered.map((chat) => <ChatCard key={chat.chat_id} chat={chat} defaultExpanded={!!expandChatId && chat.chat_id === expandChatId} />)}
           </div>
         )}
       </div>
@@ -617,5 +627,13 @@ export default function PeriskopePage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PeriskopePage() {
+  return (
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+      <PeriskopeContent />
+    </Suspense>
   );
 }
